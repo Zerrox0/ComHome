@@ -1,5 +1,8 @@
 package de.ZeroxTV.ComHome;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,15 +28,25 @@ public class Main {
 	
 	final static int sensorAmt = 2;
 	public static HashMap<Integer, String> last = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> cName = new HashMap<Integer, String>();
 	public static String email;
+	public static String userIP;
+	public static InetAddress IP;
 	public static void main(String[] args) {
 		Connection con = connect();
 		for (int i = 1; i <= sensorAmt; i++) {
 			last.put(i, getState(con, i));
+			cName.put(i, SQLSelect(con, "SELECT * FROM Sensors WHERE ID = '" + i + "'", 2));
 		}
 		
-		email = SQLSelect(con, "SELECT * FROM Config WHERE Key = Email", 2);
+		userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
+		email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
 		
+		try {
+			IP = InetAddress.getByName(userIP);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 		scheduler.scheduleAtFixedRate(new Runnable() {
 			
@@ -42,10 +55,15 @@ public class Main {
 				for (int i = 1; i <= sensorAmt; i++) {
 					String current = getState(con, i);
 					//System.out.println(i + "> " + current);
-					if (!(last.get(i).equals(current)) && current.equals("0")) {
-						//System.out.println("unequal");
-						sendMail(i, new Date() + "\nSomebody toggled your Magnet Sensor " + i + ", without your SmartPhone being in the Network");
-						last.put(i, current);
+					try {
+						if (!(last.get(i).equals(current)) && current.equals("0") && IP.isReachable(1000)) {
+							//System.out.println("unequal");
+							sendMail(i, new Date() + "\nSomebody toggled your " + cName.get(i) + " Sensor, without your SmartPhone being in the Network");
+							last.put(i, current);
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					} //else System.out.println("equal");
 				}
 				
