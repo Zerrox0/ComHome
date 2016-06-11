@@ -35,7 +35,7 @@ public class Main {
 	public static void main(String[] args) {
 		Connection con = connect();
 		for (int i = 1; i <= sensorAmt; i++) {
-			last.put(i, getState(con, i));
+			last.put(i, "0");
 			cName.put(i, SQLSelect(con, "SELECT * FROM Sensors WHERE ID = '" + i + "'", 2));
 		}
 		
@@ -56,7 +56,7 @@ public class Main {
 					String current = getState(con, i);
 					//System.out.println(i + "> " + current);
 					try {
-						if (!(last.get(i).equals(current)) && current.equals("0") && IP.isReachable(1000)) {
+						if (!(last.get(i).equals(current)) && current.equals("1") && IP.isReachable(1000)) {
 							//System.out.println("unequal");
 							sendMail(i, new Date() + "\nSomebody toggled your " + cName.get(i) + " Sensor, without your SmartPhone being in the Network");
 							last.put(i, current);
@@ -133,10 +133,9 @@ public class Main {
         Connection con = null; 
         
         try { 
-        	
-        	System.out.println("Connecting..."); 
         	String url = "jdbc:mysql://"+hostname+":"+port+"/"+dbname; 
         	con = DriverManager.getConnection(url, user, password);
+        	System.out.println("Connected with MySQL-Server"); 
         } 
         catch (SQLException sqle) { 
             System.out.println("SQLException: " + sqle.getMessage()); 
