@@ -54,20 +54,15 @@ public class Main {
 			public void run() {
 				for (int i = 1; i <= sensorAmt; i++) {
 					String current = getState(con, i);
-					//System.out.println(i + "> " + current);
 					try {
-						if (!(last.get(i).equals(current)) && current.equals("1") && IP.isReachable(1000)) {
-							//System.out.println("unequal");
-							sendMail(i, new Date() + "\nSomebody toggled your " + cName.get(i) + " Sensor, without your SmartPhone being in the Network");
+						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(1000)) {
+							sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
 							last.put(i, current);
 						}
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} //else System.out.println("equal");
+					}
 				}
-				
-				//System.out.println("--------------------");
 			}
 		}, 1, 1, TimeUnit.SECONDS);
 	}
@@ -91,7 +86,6 @@ public class Main {
 	}
 	
 	public static boolean sendMail(int sensor, String text) {
-		//System.out.println(new Date());
 	    String to = email;
 	    String from = "ComHome@zeroxtv.de";
 	    Properties properties = System.getProperties();
@@ -100,7 +94,6 @@ public class Main {
 	    properties.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 	    properties.setProperty("mail.smtp.port", "465");
 	    Session session = Session.getDefaultInstance(properties, null);
-	    //System.out.println("Connected to MailServer");
 
 	    try {
 	    	Message message = new MimeMessage(session);
@@ -148,7 +141,6 @@ public class Main {
 	}
 	
 	public static void disconnect(Connection con) {
-		System.out.println("Disconnecting..."); 
 	    try {
 			con.close();
 		} catch (SQLException e) {
