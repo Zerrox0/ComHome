@@ -22,7 +22,13 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.json.JSONObject;
+
 import com.sun.mail.smtp.SMTPTransport;
+
+import comhome.telegram.TelegramBot;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 public class Main {
 	
@@ -31,12 +37,32 @@ public class Main {
 	public static HashMap<Integer, String> cName = new HashMap<Integer, String>();
 	public static String email;
 	public static String userIP;
+	public static String com;
+	public static TelegramBot bot = new TelegramBot("216511865:AAEdsDpQF6xiDrRZfvp9z5Ln9jMZ2HnWdug");
+	public static String chatID;
 	public static InetAddress IP;
+	
 	public static void main(String[] args) {
 		Connection con = connect();
 		for (int i = 1; i <= sensorAmt; i++) {
 			last.put(i, "0");
 			cName.put(i, SQLSelect(con, "SELECT * FROM Sensors WHERE ID = '" + i + "'", 2));
+			com = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Communication'", 2);
+			chatID = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'chatID'", 2);
+		}
+		if (com.equalsIgnoreCase("telegram") && chatID.equals("0")) {
+			bot.registerHandler(new Function1<JSONObject, Unit>() {
+				@Override
+				public Unit invoke(JSONObject json) {
+					if(json.getString("text").equalsIgnoreCase("comHome register")) {
+						int chatInt = json.getJSONObject("from").getInt("id");
+						chatID = chatInt + "";
+						SQLUpdate(con, "UPDATE Config SET `Value` = '" + chatID + "' WHERE `Key` = 'chatID'");
+						bot.sendMessage(chatID, "You successfully registered your Telegram Account at your ComHome System");
+						}
+					return null;
+				}
+			});
 		}
 		
 		userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
@@ -55,8 +81,13 @@ public class Main {
 				for (int i = 1; i <= sensorAmt; i++) {
 					String current = getState(con, i);
 					try {
-						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(1000)) {
-							sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
+						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(5000)) {
+							System.out.println("unreachable");
+							if(com.equalsIgnoreCase("mail")) {
+								sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
+							} else if (com.equalsIgnoreCase("telegram")) {
+								bot.sendMessage(chatID, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
+							}
 							last.put(i, current);
 						}
 					} catch (IOException e) {
@@ -83,6 +114,16 @@ public class Main {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	public static void SQLUpdate(Connection con, String command) {
+		PreparedStatement ps;
+		try {
+			ps = con.prepareStatement(command);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static boolean sendMail(int sensor, String text) {
