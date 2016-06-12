@@ -1,10 +1,18 @@
 package comhome.telegram
 
-const val TOKEN = "216511865:AAEI9-NxYuQnYVC9zDGxoXsSi3lxTKBA9Yw"
+import java.nio.file.Paths
+
 const val BASEURL = "https://api.telegram.org/bot{token}"
 
+val token = try {
+    Paths.get("token").toFile().readLines()[0]
+} catch (e: Exception) {
+    e.printStackTrace()
+    System.exit(1234); ""
+}
+
 fun main(args: Array<String>) {
-    val bot = TelegramBot(TOKEN)
+    val bot = TelegramBot(token)
     println(bot.me)
 
     bot.registerHandler {

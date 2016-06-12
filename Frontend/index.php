@@ -98,6 +98,8 @@
 								$res = mysqli_fetch_array ( $result );
 								echo $res [0];
 								?>" />
+							<button id="setemail" class="btn btn-primary">Set email</button>
+							<button id="settelegram" class="btn btn-primary">Set telegram</button>
 						</div>
 						<div id="settingsnotification"></div>
 						<br />
@@ -120,13 +122,13 @@
 				<h2>Here's an overview over your sensors</h2>
 				<table class="table table-hover table-bordered" id="tableupdate"
 					data-toggle="table">
-
 				</table>
 				<br />
 				<h2>Statistics:</h2>
 				<script src="js/chart.js"></script>
-<canvas id="myChart" width="400" height="400"></canvas>
-<script>
+
+				<canvas id="myChart" width="400" height="400"></canvas>
+				<script>
 var ctx = document.getElementById("myChart");
 var myChart = new Chart(ctx, {
     type: 'bar',
@@ -165,15 +167,18 @@ var myChart = new Chart(ctx, {
     }
 });
 </script>
-
 			</div>
 		</div>
 	</div>
+
+
+
 	<script src="js/jquery.min.js"></script>
-	<script src="js/bootstrap.min.js"></script><script>
+	<script src="js/bootstrap.min.js"></script>
+	<script>
 						$(document).ready(function(){
 							window.setInterval(function(){
-								$.ajax("http://localhost/Eclipse/Projects/comHome/update.php", {
+								$.ajax("update.php", {
 										method:"GET",
 										success:function(data){
 											
@@ -189,7 +194,7 @@ var myChart = new Chart(ctx, {
 									//BTNCLCK
 								 var values = $("#settingsform").serialize();
 								 $.ajax({
-								        url: "submit.php",
+								        url: "/submit.php",
 								        type: "post",
 								        data: values ,
 								        success: function (response) {
@@ -203,14 +208,46 @@ var myChart = new Chart(ctx, {
 								        },
 								        error: function(jqXHR, textStatus, errorThrown) {
 								        	$("#settingsnotification").html('<div class="alert alert-danger" role="alert">An error occoured while updating your settings!' + textStatus +'</div>');
-								        }
+								    }
 
 
-								    });
+							});
 
 								
-								});
+		});
 	</script>
+	<script>
+		$("#setemail").click(function(){
+			//Set mail, SQL
+			 $.ajax({
+			        url: "toggle.php?mode=0",
+			        type: "get",
+			        data: '0' ,
+			        success: function (response) {
+				        alert(response;
+			        },
+			        error: function(jqXHR, textStatus, errorThrown) {
+						alert("An error occoured!");
+				        			    }
+
+
+		});
+		});	
+		$("#settelegram").click(function(){
+			//Set Telegram, SQL
+		});	
+	
+	</script>
+
+
+
+
+
+
+
+
+
+
 
 
 </body>
