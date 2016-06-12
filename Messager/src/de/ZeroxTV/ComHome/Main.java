@@ -65,14 +65,10 @@ public class Main {
 			});
 		}
 		
-		userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
-		email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
 		
-		try {
-			IP = InetAddress.getByName(userIP);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		
+		
+		
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 		scheduler.scheduleAtFixedRate(new Runnable() {
 			
@@ -81,7 +77,14 @@ public class Main {
 				for (int i = 1; i <= sensorAmt; i++) {
 					String current = getState(con, i);
 					try {
+						userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
+						try {
+							IP = InetAddress.getByName(userIP);
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						}
 						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(5000)) {
+							email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
 							System.out.println("unreachable");
 							if(com.equalsIgnoreCase("mail")) {
 								sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
