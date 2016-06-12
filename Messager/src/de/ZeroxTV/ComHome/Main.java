@@ -73,9 +73,7 @@ public class Main {
 			
 			@Override
 			public void run() {
-				System.out.println("ran");
 				for (int i = 1; i <= sensorAmt; i++) {
-					System.out.println(i);
 					String current = getState(con, i);
 					userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
 					if (last.get(i).equals(current)) continue;
@@ -83,23 +81,21 @@ public class Main {
 					try {
 						IP = InetAddress.getByName(userIP);
 						if (IP.isReachable(2000)) {
-							System.out.println("unreachable");
 							continue;
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-					System.out.println("returns passed");
+					last.put(i, current);
 					email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
 					if(com.equalsIgnoreCase("mail")) {
 						sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
 					} else if (com.equalsIgnoreCase("telegram")) {
 					bot.sendMessage(chatID, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
 					}
-					last.put(i, current);
 				}
 			}
-		}, 200, 200, TimeUnit.MILLISECONDS);
+		}, 100, 100, TimeUnit.MILLISECONDS);
 	}
 	
 	public static String getState(Connection con, int sensor) {
