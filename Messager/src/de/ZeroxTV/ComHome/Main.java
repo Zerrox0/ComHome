@@ -81,7 +81,8 @@ public class Main {
 				for (int i = 1; i <= sensorAmt; i++) {
 					String current = getState(con, i);
 					try {
-						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(1000)) {
+						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(5000)) {
+							System.out.println("unreachable");
 							if(com.equalsIgnoreCase("mail")) {
 								sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
 							} else if (com.equalsIgnoreCase("telegram")) {
