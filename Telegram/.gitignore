@@ -9,8 +9,6 @@
 .gradle
 gradle*
 build
-build.gradle
-settings.gradle
 
 ### Token ###
 
