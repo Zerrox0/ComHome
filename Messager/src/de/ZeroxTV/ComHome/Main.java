@@ -41,6 +41,7 @@ public class Main {
 	public static TelegramBot bot = new TelegramBot("216511865:AAEdsDpQF6xiDrRZfvp9z5Ln9jMZ2HnWdug");
 	public static String chatID;
 	public static InetAddress IP;
+	
 	public static void main(String[] args) {
 		Connection con = connect();
 		for (int i = 1; i <= sensorAmt; i++) {
