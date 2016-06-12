@@ -23,3 +23,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:1.0.1"
     compile "com.mashape.unirest:unirest-java:1.4.9"
 }
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
