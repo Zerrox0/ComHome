@@ -2,11 +2,18 @@ package comhome.telegram
 
 import com.mashape.unirest.http.Unirest
 import org.json.JSONObject
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 
 class TelegramException(message: String, data: Any? = null) : Exception(message)
 
-class TelegramBot(val token: String) {
+class TelegramBot(
+    val token: String = try {
+        Paths.get("token").toFile().readText().trim()
+    } catch (e: Exception) {
+        throw TelegramException("No token specified and no token file found.", e)
+    }
+) {
     val updateThread = Executors.newSingleThreadExecutor()
 
     //TODO: classes
