@@ -2,7 +2,6 @@ package de.ZeroxTV.ComHome;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -74,31 +73,33 @@ public class Main {
 			
 			@Override
 			public void run() {
+				System.out.println("ran");
 				for (int i = 1; i <= sensorAmt; i++) {
+					System.out.println(i);
 					String current = getState(con, i);
+					userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
+					if (last.get(i).equals(current)) continue;
+					if (!current.equals("1")) continue;
 					try {
-						userIP = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'userIP'", 2);
-						try {
-							IP = InetAddress.getByName(userIP);
-						} catch (UnknownHostException e) {
-							e.printStackTrace();
-						}
-						if (!(last.get(i).equals(current)) && current.equals("1") && !IP.isReachable(5000)) {
-							email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
+						IP = InetAddress.getByName(userIP);
+						if (IP.isReachable(2000)) {
 							System.out.println("unreachable");
-							if(com.equalsIgnoreCase("mail")) {
-								sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
-							} else if (com.equalsIgnoreCase("telegram")) {
-								bot.sendMessage(chatID, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
-							}
-							last.put(i, current);
+							continue;
 						}
-					} catch (IOException e) {
-						e.printStackTrace();
+					} catch (IOException e1) {
+						e1.printStackTrace();
 					}
+					System.out.println("returns passed");
+					email = SQLSelect(con, "SELECT * FROM Config WHERE `Key` = 'Email'", 2);
+					if(com.equalsIgnoreCase("mail")) {
+						sendMail(i, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
+					} else if (com.equalsIgnoreCase("telegram")) {
+					bot.sendMessage(chatID, new Date() + "\nSomebody toggled your Sensor \"" + cName.get(i) + "\" without your Device being in the Network");
+					}
+					last.put(i, current);
 				}
 			}
-		}, 1, 1, TimeUnit.SECONDS);
+		}, 200, 200, TimeUnit.MILLISECONDS);
 	}
 	
 	public static String getState(Connection con, int sensor) {
